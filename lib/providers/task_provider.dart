@@ -15,26 +15,33 @@ class TaskProvider extends ChangeNotifier {
 
   void deleteTask(String id) {
     _allTasks.removeWhere((task) => task.id == id);
+    _filteredTasks.removeWhere((task) => task.id == id);
     notifyListeners();
   }
 
   void editTask(Task updatedTask) {
     final index =
-    _allTasks.indexWhere((task) => task.id == updatedTask.id);
+        _allTasks.indexWhere((task) => task.id == updatedTask.id);
     if (index != -1) {
       _allTasks[index] = updatedTask;
       notifyListeners();
     }
   }
 
-  /// 🔍 INI YANG DIPAKAI OLEH HomeScreen
+  void clearAllTasks() {
+    _allTasks.clear();
+    _filteredTasks.clear();
+    notifyListeners();
+  }
+
   void searchTask(String query) {
     if (query.isEmpty) {
       _filteredTasks = [];
     } else {
       _filteredTasks = _allTasks
           .where((task) =>
-          task.title.toLowerCase().contains(query.toLowerCase()))
+              task.title.toLowerCase().contains(query.toLowerCase()) ||
+              task.description.toLowerCase().contains(query.toLowerCase()))
           .toList();
     }
     notifyListeners();
