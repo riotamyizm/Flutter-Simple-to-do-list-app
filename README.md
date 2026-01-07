@@ -1,16 +1,42 @@
-# simple_to_do_app
+# Flutter Simple To-Do List App
 
-A new Flutter project.
+Hi there! 👋  
+This is a **simple To-Do List app built with Flutter**, created mainly for study and practice purposes. It helped me learn more about Flutter basics like state management, UI building, and working with lists.
 
-## Getting Started
+If you’re new to Flutter and want a starting point for a simple productivity app, this might be useful for you too. 😊
 
-This project is a starting point for a Flutter application.
+---
 
-A few resources to get you started if this is your first Flutter project:
+## 📌 What This App Does
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+This app lets you:
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- 📝 **Add tasks**
+- ✅ **View your task list**
+- ❌ **Remove tasks**
+- ✔️ **Mark tasks as done**  
+Because this is mainly a study project, it doesn’t have persistent storage or advanced features — but it’s a solid foundation to expand from!  
+
+---
+
+## 🚀 Tech & Tools
+
+- **Flutter & Dart** — UI framework and language  
+- **Stateless & Stateful widgets**  
+- **ListView to show tasks**  
+- **Basic UI & interaction patterns**  
+- Works on Android, iOS, and other Flutter platforms
+
+(So far it doesn’t include a local database or cloud sync — but you *could* add that later 👍)
+
+---
+
+## 🧑‍💻 Getting Started
+
+If you want to try this project locally:
+
+### 1. Clone the repo
+
+```bash
+git clone https://github.com/riotamyizm/Flutter-Simple-to-do-list-app.git
+cd Flutter-Simple-to-do-list-app
