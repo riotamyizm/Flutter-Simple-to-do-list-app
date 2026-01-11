@@ -15,7 +15,6 @@ class ThemeProvider extends ChangeNotifier {
   bool get isSystemMode => _themeMode == ThemeMode.system;
 
   ThemeProvider() {
-    _isLoading = false; // Set to false initially
     _loadPreferences();
   }
 
@@ -32,7 +31,7 @@ class ThemeProvider extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      print('Error loading theme preferences: $e');
+      debugPrint('Error loading theme preferences: $e');
       // Keep defaults on error
     }
   }
@@ -47,7 +46,7 @@ class ThemeProvider extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt(_themeKey, mode.index);
     } catch (e) {
-      print('Error saving theme mode: $e');
+      debugPrint('Error saving theme mode: $e');
     }
   }
 
@@ -69,7 +68,7 @@ class ThemeProvider extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_notificationKey, enabled);
     } catch (e) {
-      print('Error saving notification preference: $e');
+      debugPrint('Error saving notification preference: $e');
     }
   }
 
@@ -83,7 +82,7 @@ class ThemeProvider extends ChangeNotifier {
       await prefs.remove(_themeKey);
       await prefs.remove(_notificationKey);
     } catch (e) {
-      print('Error resetting preferences: $e');
+      debugPrint('Error resetting preferences: $e');
     }
   }
 }

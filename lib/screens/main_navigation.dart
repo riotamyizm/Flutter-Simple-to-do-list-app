@@ -14,9 +14,9 @@ class _MainNavigationState extends State<MainNavigation> {
   int index = 0;
 
   final pages = [
-    HomeScreen(),
-    StatsScreen(),
-    SettingsScreen(),
+    const HomeScreen(),
+    const StatsScreen(),
+    const SettingsScreen(),
   ];
 
   bool isDesktop(BuildContext context) =>

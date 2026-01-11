@@ -98,19 +98,19 @@ class _HomeScreenState extends State<HomeScreen> {
             tooltip: 'Sort tasks',
             onSelected: (sort) => provider.setSort(sort),
             itemBuilder: (context) => [
-              PopupMenuItem(
+              const PopupMenuItem(
                 value: TaskSort.dateDesc,
                 child: Text('Newest First'),
               ),
-              PopupMenuItem(
+              const PopupMenuItem(
                 value: TaskSort.dateAsc,
                 child: Text('Oldest First'),
               ),
-              PopupMenuItem(
+              const PopupMenuItem(
                 value: TaskSort.titleAsc,
                 child: Text('Title (A-Z)'),
               ),
-              PopupMenuItem(
+              const PopupMenuItem(
                 value: TaskSort.titleDesc,
                 child: Text('Title (Z-A)'),
               ),

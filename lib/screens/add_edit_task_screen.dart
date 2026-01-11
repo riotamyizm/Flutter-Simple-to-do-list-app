@@ -93,12 +93,12 @@ class _AddEditTaskScreenState extends State<AddEditTaskScreen> {
 
             // Type selector
             DropdownButtonFormField<TaskType>(
-              value: _selectedType,
+              initialValue: _selectedType,
               decoration: const InputDecoration(
                 labelText: 'Type',
                 prefixIcon: Icon(Icons.category),
               ),
-              items: [
+              items: const [
                 DropdownMenuItem(
                   value: TaskType.todo,
                   child: Row(

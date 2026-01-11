@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart';
 import '../models/task.dart';
+
+
 
 class StorageService {
   static const String _tasksKey = 'tasks_v1';
@@ -30,7 +33,7 @@ class StorageService {
       }
       return success;
     } catch (e) {
-      print('Error saving tasks: $e');
+      debugPrint('Error saving tasks: $e');
       return false;
     }
   }
@@ -50,7 +53,7 @@ class StorageService {
           .map((json) => Task.fromJson(json as Map<String, dynamic>))
           .toList();
     } catch (e) {
-      print('Error loading tasks: $e');
+      debugPrint('Error loading tasks: $e');
       return [];
     }
   }
@@ -61,7 +64,7 @@ class StorageService {
       await init();
       return await _prefs!.remove(_tasksKey);
     } catch (e) {
-      print('Error clearing tasks: $e');
+      debugPrint('Error clearing tasks: $e');
       return false;
     }
   }
@@ -74,7 +77,7 @@ class StorageService {
       if (timestamp == null) return null;
       return DateTime.fromMillisecondsSinceEpoch(timestamp);
     } catch (e) {
-      print('Error getting last sync time: $e');
+      debugPrint('Error getting last sync time: $e');
       return null;
     }
   }
