@@ -7,7 +7,6 @@ class ThemeProvider extends ChangeNotifier {
 
   ThemeMode _themeMode = ThemeMode.system;
   bool _notificationsEnabled = true;
-  bool _isLoading = false; // Remove this, we don't need it
 
   ThemeMode get themeMode => _themeMode;
   bool get notificationsEnabled => _notificationsEnabled;
