@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/task_provider.dart'; // This exports Task and TaskType too
+import '../providers/task_provider.dart';
 import '../routes/app_routes.dart';
 import 'package:intl/intl.dart';
 
@@ -14,6 +14,9 @@ class TaskTile extends StatelessWidget {
     final provider = context.read<TaskProvider>();
     final theme = Theme.of(context);
     final dateFormat = DateFormat('MMM dd, yyyy');
+
+    // FIXED: Check if this is a note
+    final isNote = task.type == TaskType.note;
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
@@ -31,48 +34,63 @@ class TaskTile extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Checkbox
-              Checkbox(
-                value: task.isDone,
-                onChanged: (value) async {
-                  await provider.toggleTask(task.id);
+              // FIXED: Show icon for notes, checkbox for todos
+              if (isNote)
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.note,
+                    color: Colors.orange,
+                    size: 24,
+                  ),
+                )
+              else
+                Checkbox(
+                  value: task.isDone,
+                  onChanged: (value) async {
+                    await provider.toggleTask(task.id);
 
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).clearSnackBars();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          task.isDone
-                              ? 'Task marked as pending'
-                              : 'Task completed!',
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).clearSnackBars();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            task.isDone
+                                ? 'Task marked as pending'
+                                : 'Task completed!',
+                          ),
+                          duration: const Duration(seconds: 1),
+                          behavior: SnackBarBehavior.floating,
+                          action: SnackBarAction(
+                            label: 'Undo',
+                            onPressed: () {
+                              provider.toggleTask(task.id);
+                            },
+                          ),
                         ),
-                        duration: const Duration(seconds: 1),
-                        behavior: SnackBarBehavior.floating,
-                        action: SnackBarAction(
-                          label: 'Undo',
-                          onPressed: () {
-                            provider.toggleTask(task.id);
-                          },
-                        ),
-                      ),
-                    );
-                  }
-                },
-              ),
+                      );
+                    }
+                  },
+                ),
 
               // Task content
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Title
+                    // Title - FIXED: Only strikethrough completed todos, not notes
                     Text(
                       task.title,
                       style: theme.textTheme.titleMedium?.copyWith(
-                        decoration: task.isDone
+                        decoration: (!isNote && task.isDone)
                             ? TextDecoration.lineThrough
                             : null,
-                        color: task.isDone
+                        color: (!isNote && task.isDone)
                             ? theme.textTheme.bodySmall?.color
                             : null,
                         fontWeight: FontWeight.w600,
@@ -81,13 +99,13 @@ class TaskTile extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
 
-                    // Description
+                    // Description - FIXED: Only strikethrough completed todos
                     if (task.description.isNotEmpty) ...[
                       const SizedBox(height: 4),
                       Text(
                         task.description,
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          decoration: task.isDone
+                          decoration: (!isNote && task.isDone)
                               ? TextDecoration.lineThrough
                               : null,
                           color: Colors.grey[600],
@@ -106,13 +124,13 @@ class TaskTile extends StatelessWidget {
                         // Type badge
                         _buildBadge(
                           context,
-                          icon: task.type == TaskType.todo
-                              ? Icons.check_circle_outline
-                              : Icons.note,
-                          label: task.type == TaskType.todo ? 'Todo' : 'Note',
-                          color: task.type == TaskType.todo
-                              ? Colors.blue
-                              : Colors.orange,
+                          icon: isNote
+                              ? Icons.note
+                              : Icons.check_circle_outline,
+                          label: isNote ? 'Note' : 'Todo',
+                          color: isNote
+                              ? Colors.orange
+                              : Colors.blue,
                         ),
 
                         // Date badge
@@ -142,19 +160,21 @@ class TaskTile extends StatelessWidget {
                       ],
                     ),
                   ),
-                  PopupMenuItem(
-                    value: 'toggle',
-                    child: Row(
-                      children: [
-                        Icon(
-                          task.isDone ? Icons.restart_alt : Icons.check,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(task.isDone ? 'Mark Pending' : 'Mark Complete'),
-                      ],
+                  // FIXED: Only show toggle option for todos, not notes
+                  if (!isNote)
+                    PopupMenuItem(
+                      value: 'toggle',
+                      child: Row(
+                        children: [
+                          Icon(
+                            task.isDone ? Icons.restart_alt : Icons.check,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(task.isDone ? 'Mark Pending' : 'Mark Complete'),
+                        ],
+                      ),
                     ),
-                  ),
                   const PopupMenuDivider(),
                   const PopupMenuItem(
                     value: 'delete',
@@ -177,7 +197,10 @@ class TaskTile extends StatelessWidget {
                       );
                       break;
                     case 'toggle':
-                      await provider.toggleTask(task.id);
+                    // FIXED: Extra safety check
+                      if (!isNote) {
+                        await provider.toggleTask(task.id);
+                      }
                       break;
                     case 'delete':
                       _showDeleteDialog(context, provider);
@@ -201,9 +224,9 @@ class TaskTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha:0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha:0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -227,10 +250,12 @@ class TaskTile extends StatelessWidget {
       BuildContext context,
       TaskProvider provider,
       ) async {
+    // FIXED: Different dialog text for notes vs todos
+    final isNote = task.type == TaskType.note;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Task?'),
+        title: Text('Delete ${isNote ? 'Note' : 'Task'}?'),
         content: Text(
           'Are you sure you want to delete "${task.title}"? This action cannot be undone.',
         ),
@@ -257,7 +282,9 @@ class TaskTile extends StatelessWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              success ? 'Task deleted' : 'Failed to delete task',
+              success
+                  ? '${isNote ? 'Note' : 'Task'} deleted'
+                  : 'Failed to delete ${isNote ? 'note' : 'task'}',
             ),
             backgroundColor: success ? Colors.green : Colors.red,
             behavior: SnackBarBehavior.floating,

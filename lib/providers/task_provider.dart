@@ -32,10 +32,14 @@ class TaskProvider extends ChangeNotifier {
     // Apply filter
     switch (_currentFilter) {
       case TaskFilter.completed:
-        result = result.where((t) => t.isDone).toList();
+      // FIXED: Only show completed todos, exclude all notes
+        result = result.where((t) => t.type == TaskType.todo && t.isDone).toList();
         break;
       case TaskFilter.pending:
-        result = result.where((t) => !t.isDone).toList();
+      // FIXED: Show pending todos and all notes
+        result = result.where((t) =>
+        t.type == TaskType.note || (t.type == TaskType.todo && !t.isDone)
+        ).toList();
         break;
       case TaskFilter.all:
         break;
@@ -62,12 +66,18 @@ class TaskProvider extends ChangeNotifier {
   }
 
   List<Task> get allTasks => List.unmodifiable(_allTasks);
-  List<Task> get completedTasks => _allTasks.where((t) => t.isDone).toList();
-  List<Task> get pendingTasks => _allTasks.where((t) => !t.isDone).toList();
 
-  int get totalTasks => _allTasks.length;
+  // FIXED: Only count todos for completion tracking
+  List<Task> get completedTasks => _allTasks.where((t) => t.type == TaskType.todo && t.isDone).toList();
+  List<Task> get pendingTasks => _allTasks.where((t) => t.type == TaskType.todo && !t.isDone).toList();
+
+  // FIXED: Separate counters for todos and notes
+  int get totalTasks => _allTasks.where((t) => t.type == TaskType.todo).length;
+  int get totalNotes => _allTasks.where((t) => t.type == TaskType.note).length;
   int get completedCount => completedTasks.length;
   int get pendingCount => pendingTasks.length;
+
+  // FIXED: Calculate percentage based only on todos
   double get completionPercentage =>
       totalTasks == 0 ? 0.0 : (completedCount / totalTasks) * 100;
 
@@ -138,6 +148,12 @@ class TaskProvider extends ChangeNotifier {
     if (index == -1) return false;
 
     final task = _allTasks[index];
+
+    // FIXED: Don't toggle if it's a note
+    if (task.type == TaskType.note) {
+      return false;
+    }
+
     final updatedTask = task.copyWith(isDone: !task.isDone);
     return await updateTask(updatedTask);
   }
@@ -214,20 +230,33 @@ class TaskProvider extends ChangeNotifier {
 
   /// Bulk operations
   Future<bool> deleteCompletedTasks() async {
-    _allTasks.removeWhere((t) => t.isDone);
-    _filteredTasks.removeWhere((t) => t.isDone);
+    // FIXED: Only delete completed todos, not notes
+    _allTasks.removeWhere((t) => t.type == TaskType.todo && t.isDone);
+    _filteredTasks.removeWhere((t) => t.type == TaskType.todo && t.isDone);
     notifyListeners();
     return await _saveTasks();
   }
 
   Future<bool> markAllAsCompleted() async {
-    _allTasks = _allTasks.map((t) => t.copyWith(isDone: true)).toList();
+    // FIXED: Only mark todos as completed, not notes
+    _allTasks = _allTasks.map((t) {
+      if (t.type == TaskType.todo) {
+        return t.copyWith(isDone: true);
+      }
+      return t;
+    }).toList();
     notifyListeners();
     return await _saveTasks();
   }
 
   Future<bool> markAllAsPending() async {
-    _allTasks = _allTasks.map((t) => t.copyWith(isDone: false)).toList();
+    // FIXED: Only mark todos as pending, not notes
+    _allTasks = _allTasks.map((t) {
+      if (t.type == TaskType.todo) {
+        return t.copyWith(isDone: false);
+      }
+      return t;
+    }).toList();
     notifyListeners();
     return await _saveTasks();
   }

@@ -146,25 +146,65 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
-          // Task summary
-          if (provider.totalTasks > 0)
+          // FIXED: Task summary - shows only todo completion, notes separately
+          if (provider.totalTasks > 0 || provider.totalNotes > 0)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: Column(
                 children: [
-                  Text(
-                    '${tasks.length} task${tasks.length != 1 ? 's' : ''}',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '${tasks.length} item${tasks.length != 1 ? 's' : ''}',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      if (provider.totalTasks > 0)
+                        Text(
+                          '${provider.completionPercentage.toStringAsFixed(0)}% todos complete',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Colors.green,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                    ],
                   ),
-                  if (provider.totalTasks > 0)
-                    Text(
-                      '${provider.completionPercentage.toStringAsFixed(0)}% complete',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.green,
-                        fontWeight: FontWeight.bold,
+                  // FIXED: Show breakdown of todos and notes
+                  if (provider.totalTasks > 0 || provider.totalNotes > 0)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Row(
+                        children: [
+                          if (provider.totalTasks > 0) ...[
+                            Icon(Icons.check_circle_outline, size: 16, color: Colors.blue),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${provider.completedCount}/${provider.totalTasks} todos',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                          if (provider.totalTasks > 0 && provider.totalNotes > 0)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                              child: Text('•', style: TextStyle(color: Colors.grey[400])),
+                            ),
+                          if (provider.totalNotes > 0) ... [
+                            Icon(Icons.note, size: 16, color: Colors.orange),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${provider.totalNotes} note${provider.totalNotes != 1 ? 's' : ''}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
                 ],
@@ -206,7 +246,7 @@ class _HomeScreenState extends State<HomeScreen> {
     String subtitle;
     IconData icon;
 
-    if (provider.totalTasks == 0) {
+    if (provider.totalTasks == 0 && provider.totalNotes == 0) {
       icon = Icons.task_alt;
       message = 'No tasks yet';
       subtitle = 'Tap the + button to create your first task';
