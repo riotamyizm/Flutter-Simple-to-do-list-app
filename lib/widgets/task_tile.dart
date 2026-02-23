@@ -15,7 +15,6 @@ class TaskTile extends StatelessWidget {
     final theme = Theme.of(context);
     final dateFormat = DateFormat('MMM dd, yyyy');
 
-    // FIXED: Check if this is a note
     final isNote = task.type == TaskType.note;
 
     return Card(
@@ -34,10 +33,11 @@ class TaskTile extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // FIXED: Show icon for notes, checkbox for todos
-              if (isNote)
-                Container(
-                  width: 40,
+              /// LEFT SIDE (Fixed width to prevent overflow)
+              SizedBox(
+                width: 40,
+                child: isNote
+                    ? Container(
                   height: 40,
                   decoration: BoxDecoration(
                     color: Colors.orange.withValues(alpha: 0.2),
@@ -49,8 +49,7 @@ class TaskTile extends StatelessWidget {
                     size: 24,
                   ),
                 )
-              else
-                Checkbox(
+                    : Checkbox(
                   value: task.isDone,
                   onChanged: (value) async {
                     await provider.toggleTask(task.id);
@@ -77,13 +76,15 @@ class TaskTile extends StatelessWidget {
                     }
                   },
                 ),
+              ),
 
-              // Task content
+              const SizedBox(width: 8),
+
+              /// CONTENT
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Title - FIXED: Only strikethrough completed todos, not notes
                     Text(
                       task.title,
                       style: theme.textTheme.titleMedium?.copyWith(
@@ -99,7 +100,6 @@ class TaskTile extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
 
-                    // Description - FIXED: Only strikethrough completed todos
                     if (task.description.isNotEmpty) ...[
                       const SizedBox(height: 4),
                       Text(
@@ -115,25 +115,20 @@ class TaskTile extends StatelessWidget {
                       ),
                     ],
 
-                    // Metadata
                     const SizedBox(height: 8),
+
                     Wrap(
                       spacing: 8,
                       runSpacing: 4,
                       children: [
-                        // Type badge
                         _buildBadge(
                           context,
                           icon: isNote
                               ? Icons.note
                               : Icons.check_circle_outline,
                           label: isNote ? 'Note' : 'Todo',
-                          color: isNote
-                              ? Colors.orange
-                              : Colors.blue,
+                          color: isNote ? Colors.orange : Colors.blue,
                         ),
-
-                        // Date badge
                         _buildBadge(
                           context,
                           icon: Icons.calendar_today,
@@ -146,67 +141,78 @@ class TaskTile extends StatelessWidget {
                 ),
               ),
 
-              // Actions
-              PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert),
-                itemBuilder: (context) => [
-                  const PopupMenuItem(
-                    value: 'edit',
-                    child: Row(
-                      children: [
-                        Icon(Icons.edit, size: 20),
-                        SizedBox(width: 8),
-                        Text('Edit'),
-                      ],
-                    ),
-                  ),
-                  // FIXED: Only show toggle option for todos, not notes
-                  if (!isNote)
-                    PopupMenuItem(
-                      value: 'toggle',
+              const SizedBox(width: 8),
+
+              /// RIGHT SIDE (Prevent width stretching)
+              IntrinsicWidth(
+                child: PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert),
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      value: 'edit',
                       child: Row(
                         children: [
-                          Icon(
-                            task.isDone ? Icons.restart_alt : Icons.check,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(task.isDone ? 'Mark Pending' : 'Mark Complete'),
+                          Icon(Icons.edit, size: 20),
+                          SizedBox(width: 8),
+                          Text('Edit'),
                         ],
                       ),
                     ),
-                  const PopupMenuDivider(),
-                  const PopupMenuItem(
-                    value: 'delete',
-                    child: Row(
-                      children: [
-                        Icon(Icons.delete, size: 20, color: Colors.red),
-                        SizedBox(width: 8),
-                        Text('Delete', style: TextStyle(color: Colors.red)),
-                      ],
+                    if (!isNote)
+                      PopupMenuItem(
+                        value: 'toggle',
+                        child: Row(
+                          children: [
+                            Icon(
+                              task.isDone
+                                  ? Icons.restart_alt
+                                  : Icons.check,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(task.isDone
+                                ? 'Mark Pending'
+                                : 'Mark Complete'),
+                          ],
+                        ),
+                      ),
+                    const PopupMenuDivider(),
+                    const PopupMenuItem(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete,
+                              size: 20, color: Colors.red),
+                          SizedBox(width: 8),
+                          Text(
+                            'Delete',
+                            style:
+                            TextStyle(color: Colors.red),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-                onSelected: (value) async {
-                  switch (value) {
-                    case 'edit':
-                      Navigator.pushNamed(
-                        context,
-                        AppRoutes.addTask,
-                        arguments: task,
-                      );
-                      break;
-                    case 'toggle':
-                    // FIXED: Extra safety check
-                      if (!isNote) {
-                        await provider.toggleTask(task.id);
-                      }
-                      break;
-                    case 'delete':
-                      _showDeleteDialog(context, provider);
-                      break;
-                  }
-                },
+                  ],
+                  onSelected: (value) async {
+                    switch (value) {
+                      case 'edit':
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.addTask,
+                          arguments: task,
+                        );
+                        break;
+                      case 'toggle':
+                        if (!isNote) {
+                          await provider.toggleTask(task.id);
+                        }
+                        break;
+                      case 'delete':
+                        _showDeleteDialog(context, provider);
+                        break;
+                    }
+                  },
+                ),
               ),
             ],
           ),
@@ -222,11 +228,13 @@ class TaskTile extends StatelessWidget {
         required Color color,
       }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding:
+      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
+        border:
+        Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -250,8 +258,8 @@ class TaskTile extends StatelessWidget {
       BuildContext context,
       TaskProvider provider,
       ) async {
-    // FIXED: Different dialog text for notes vs todos
     final isNote = task.type == TaskType.note;
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -261,11 +269,13 @@ class TaskTile extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () =>
+                Navigator.pop(context, false),
             child: const Text('Cancel'),
           ),
           FilledButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () =>
+                Navigator.pop(context, true),
             style: FilledButton.styleFrom(
               backgroundColor: Colors.red,
             ),
@@ -276,7 +286,8 @@ class TaskTile extends StatelessWidget {
     );
 
     if (confirmed == true && context.mounted) {
-      final success = await provider.deleteTask(task.id);
+      final success =
+      await provider.deleteTask(task.id);
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -286,7 +297,8 @@ class TaskTile extends StatelessWidget {
                   ? '${isNote ? 'Note' : 'Task'} deleted'
                   : 'Failed to delete ${isNote ? 'note' : 'task'}',
             ),
-            backgroundColor: success ? Colors.green : Colors.red,
+            backgroundColor:
+            success ? Colors.green : Colors.red,
             behavior: SnackBarBehavior.floating,
           ),
         );
