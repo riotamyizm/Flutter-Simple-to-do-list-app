@@ -58,10 +58,11 @@ class TaskTile extends StatelessWidget {
                       ScaffoldMessenger.of(context).clearSnackBars();
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
+                          // FIX: Inverted condition to reflect new state
                           content: Text(
                             task.isDone
-                                ? 'Task marked as pending'
-                                : 'Task completed!',
+                                ? 'Task completed!'
+                                : 'Task marked as pending',
                           ),
                           duration: const Duration(seconds: 1),
                           behavior: SnackBarBehavior.floating,
@@ -181,13 +182,11 @@ class TaskTile extends StatelessWidget {
                       value: 'delete',
                       child: Row(
                         children: [
-                          Icon(Icons.delete,
-                              size: 20, color: Colors.red),
+                          Icon(Icons.delete, size: 20, color: Colors.red),
                           SizedBox(width: 8),
                           Text(
                             'Delete',
-                            style:
-                            TextStyle(color: Colors.red),
+                            style: TextStyle(color: Colors.red),
                           ),
                         ],
                       ),
@@ -228,13 +227,11 @@ class TaskTile extends StatelessWidget {
         required Color color,
       }) {
     return Container(
-      padding:
-      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border:
-        Border.all(color: color.withValues(alpha: 0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -269,13 +266,11 @@ class TaskTile extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () =>
-                Navigator.pop(context, false),
+            onPressed: () => Navigator.pop(context, false),
             child: const Text('Cancel'),
           ),
           FilledButton(
-            onPressed: () =>
-                Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(
               backgroundColor: Colors.red,
             ),
@@ -286,10 +281,11 @@ class TaskTile extends StatelessWidget {
     );
 
     if (confirmed == true && context.mounted) {
-      final success =
-      await provider.deleteTask(task.id);
+      final success = await provider.deleteTask(task.id);
 
       if (context.mounted) {
+        // FIX: Clear any existing snackbars before showing delete result
+        ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -297,8 +293,7 @@ class TaskTile extends StatelessWidget {
                   ? '${isNote ? 'Note' : 'Task'} deleted'
                   : 'Failed to delete ${isNote ? 'note' : 'task'}',
             ),
-            backgroundColor:
-            success ? Colors.green : Colors.red,
+            backgroundColor: success ? Colors.green : Colors.red,
             behavior: SnackBarBehavior.floating,
           ),
         );
