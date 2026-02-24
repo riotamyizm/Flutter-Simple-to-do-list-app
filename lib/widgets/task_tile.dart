@@ -52,29 +52,31 @@ class TaskTile extends StatelessWidget {
                     : Checkbox(
                   value: task.isDone,
                   onChanged: (value) async {
+                    // FIX: Capture messenger before the await so we never
+                    // call ScaffoldMessenger.of(context) after an async
+                    // gap where the context may be deactivated.
+                    final messenger = ScaffoldMessenger.of(context);
+
                     await provider.toggleTask(task.id);
 
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).clearSnackBars();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          // FIX: Inverted condition to reflect new state
-                          content: Text(
-                            task.isDone
-                                ? 'Task completed!'
-                                : 'Task marked as pending',
-                          ),
-                          duration: const Duration(seconds: 1),
-                          behavior: SnackBarBehavior.floating,
-                          action: SnackBarAction(
-                            label: 'Undo',
-                            onPressed: () {
-                              provider.toggleTask(task.id);
-                            },
-                          ),
+                    messenger.clearSnackBars();
+                    messenger.showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          task.isDone
+                              ? 'Task marked as pending'
+                              : 'Task completed!',
                         ),
-                      );
-                    }
+                        duration: const Duration(seconds: 1),
+                        behavior: SnackBarBehavior.floating,
+                        action: SnackBarAction(
+                          label: 'Undo',
+                          onPressed: () {
+                            provider.toggleTask(task.id);
+                          },
+                        ),
+                      ),
+                    );
                   },
                 ),
               ),
@@ -281,23 +283,25 @@ class TaskTile extends StatelessWidget {
     );
 
     if (confirmed == true && context.mounted) {
+      // FIX: Capture messenger before the await so it's resolved while the
+      // context is still active. After deleteTask completes, the context from
+      // the popup menu's overlay may already be deactivated.
+      final messenger = ScaffoldMessenger.of(context);
+
       final success = await provider.deleteTask(task.id);
 
-      if (context.mounted) {
-        // FIX: Clear any existing snackbars before showing delete result
-        ScaffoldMessenger.of(context).clearSnackBars();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              success
-                  ? '${isNote ? 'Note' : 'Task'} deleted'
-                  : 'Failed to delete ${isNote ? 'note' : 'task'}',
-            ),
-            backgroundColor: success ? Colors.green : Colors.red,
-            behavior: SnackBarBehavior.floating,
+      messenger.clearSnackBars();
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            success
+                ? '${isNote ? 'Note' : 'Task'} deleted'
+                : 'Failed to delete ${isNote ? 'note' : 'task'}',
           ),
-        );
-      }
+          backgroundColor: success ? Colors.green : Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 }

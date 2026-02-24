@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/task_provider.dart'; // This exports Task and TaskType too
+import '../providers/task_provider.dart';
 
 class AddEditTaskScreen extends StatefulWidget {
   final Task? task;
@@ -197,17 +197,20 @@ class _AddEditTaskScreenState extends State<AddEditTaskScreen> {
 
     setState(() => _isSaving = false);
 
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+
     if (success) {
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(
           content: Text(isEditing ? 'Task updated' : 'Task created'),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
         ),
       );
+      navigator.pop();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         const SnackBar(
           content: Text('Failed to save task'),
           backgroundColor: Colors.red,
@@ -248,14 +251,19 @@ class _AddEditTaskScreenState extends State<AddEditTaskScreen> {
 
       if (!mounted) return;
 
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
+      // FIX: Same fix — capture messenger and navigator before pop,
+      // show snackbar first, then pop to avoid overlay errors.
+      final messenger = ScaffoldMessenger.of(context);
+      final navigator = Navigator.of(context);
+
+      messenger.showSnackBar(
         SnackBar(
           content: Text(success ? 'Task deleted' : 'Failed to delete task'),
           backgroundColor: success ? Colors.green : Colors.red,
           behavior: SnackBarBehavior.floating,
         ),
       );
+      navigator.pop();
     }
   }
 }

@@ -146,7 +146,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
-          // FIXED: Task summary - shows only todo completion, notes separately
+          // Task summary - shows only todo completion, notes separately
           if (provider.totalTasks > 0 || provider.totalNotes > 0)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -171,14 +171,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                     ],
                   ),
-                  // FIXED: Show breakdown of todos and notes
                   if (provider.totalTasks > 0 || provider.totalNotes > 0)
                     Padding(
                       padding: const EdgeInsets.only(top: 4),
                       child: Row(
                         children: [
                           if (provider.totalTasks > 0) ...[
-                            Icon(Icons.check_circle_outline, size: 16, color: Colors.blue),
+                            Icon(Icons.check_circle_outline,
+                                size: 16, color: Colors.blue),
                             const SizedBox(width: 4),
                             Text(
                               '${provider.completedCount}/${provider.totalTasks} todos',
@@ -190,10 +190,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           ],
                           if (provider.totalTasks > 0 && provider.totalNotes > 0)
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 8),
-                              child: Text('•', style: TextStyle(color: Colors.grey[400])),
+                              padding:
+                              const EdgeInsets.symmetric(horizontal: 8),
+                              child: Text('•',
+                                  style: TextStyle(color: Colors.grey[400])),
                             ),
-                          if (provider.totalNotes > 0) ... [
+                          if (provider.totalNotes > 0) ...[
                             Icon(Icons.note, size: 16, color: Colors.orange),
                             const SizedBox(width: 4),
                             Text(
@@ -260,30 +262,47 @@ class _HomeScreenState extends State<HomeScreen> {
       subtitle = 'Try changing the filter';
     }
 
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            size: 120,
-            color: Colors.grey[300],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            message,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: Colors.grey[600],
+    // FIX: Wrap in LayoutBuilder + SingleChildScrollView so the Column never
+    // overflows when vertical space is constrained (e.g. keyboard open, split
+    // screen, or the summary bar takes up significant height).
+    // LayoutBuilder lets us scale the icon size relative to available height
+    // so the empty state always fits without clipping.
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final iconSize = (constraints.maxHeight * 0.3).clamp(48.0, 120.0);
+
+        return SingleChildScrollView(
+          physics: const NeverScrollableScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    icon,
+                    size: iconSize,
+                    color: Colors.grey[300],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    message,
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    subtitle,
+                    style: TextStyle(color: Colors.grey[500]),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            subtitle,
-            style: TextStyle(color: Colors.grey[500]),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

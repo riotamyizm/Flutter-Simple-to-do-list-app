@@ -83,7 +83,9 @@ class TaskProvider extends ChangeNotifier {
 
   // Constructor
   TaskProvider() {
-    loadTasks();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      loadTasks();
+    });
   }
 
   /// Load tasks from storage
