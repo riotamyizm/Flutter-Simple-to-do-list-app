@@ -31,6 +31,7 @@ class TaskTile extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Row(
+            mainAxisSize: MainAxisSize.max,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               /// LEFT SIDE (Fixed width to prevent overflow)
@@ -147,7 +148,8 @@ class TaskTile extends StatelessWidget {
               const SizedBox(width: 8),
 
               /// RIGHT SIDE (Prevent width stretching)
-              IntrinsicWidth(
+              SizedBox(
+                width: 40,
                 child: PopupMenuButton<String>(
                   icon: const Icon(Icons.more_vert),
                   itemBuilder: (context) => [

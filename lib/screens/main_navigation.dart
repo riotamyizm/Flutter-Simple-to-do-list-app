@@ -29,6 +29,7 @@ class _MainNavigationState extends State<MainNavigation> {
           ? Row(
         children: [
           NavigationRail(
+            scrollable: true,
             selectedIndex: index,
             onDestinationSelected: (i) => setState(() => index = i),
             labelType: NavigationRailLabelType.all,

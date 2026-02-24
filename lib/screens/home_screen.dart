@@ -118,120 +118,136 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Search bar
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Search tasks...',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                  icon: const Icon(Icons.clear),
-                  onPressed: () {
-                    _searchController.clear();
-                    provider.clearSearch();
-                    setState(() {});
-                  },
-                )
-                    : null,
-              ),
-              onChanged: (value) {
-                provider.searchTask(value);
-                setState(() {});
-              },
-            ),
-          ),
-
-          // Task summary - shows only todo completion, notes separately
-          if (provider.totalTasks > 0 || provider.totalNotes > 0)
+      body: RefreshIndicator(
+        onRefresh: () => provider.loadTasks(),
+        child: ListView(
+          padding: const EdgeInsets.only(bottom: 16),
+          children: [
+            // Search bar
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '${tasks.length} item${tasks.length != 1 ? 's' : ''}',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                      if (provider.totalTasks > 0)
-                        Text(
-                          '${provider.completionPercentage.toStringAsFixed(0)}% todos complete',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.green,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                    ],
-                  ),
-                  if (provider.totalTasks > 0 || provider.totalNotes > 0)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Row(
-                        children: [
-                          if (provider.totalTasks > 0) ...[
-                            Icon(Icons.check_circle_outline,
-                                size: 16, color: Colors.blue),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${provider.completedCount}/${provider.totalTasks} todos',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ],
-                          if (provider.totalTasks > 0 && provider.totalNotes > 0)
-                            Padding(
-                              padding:
-                              const EdgeInsets.symmetric(horizontal: 8),
-                              child: Text('•',
-                                  style: TextStyle(color: Colors.grey[400])),
-                            ),
-                          if (provider.totalNotes > 0) ...[
-                            Icon(Icons.note, size: 16, color: Colors.orange),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${provider.totalNotes} note${provider.totalNotes != 1 ? 's' : ''}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-            ),
-
-          // Task list
-          Expanded(
-            child: tasks.isEmpty
-                ? _buildEmptyState(context, provider)
-                : RefreshIndicator(
-              onRefresh: () => provider.loadTasks(),
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                itemCount: tasks.length,
-                itemBuilder: (context, index) {
-                  return TaskTile(
-                    key: ValueKey(tasks[index].id),
-                    task: tasks[index],
-                  );
+              padding: const EdgeInsets.all(12),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Search tasks...',
+                  prefixIcon: const Icon(Icons.search),
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                    icon: const Icon(Icons.clear),
+                    onPressed: () {
+                      _searchController.clear();
+                      provider.clearSearch();
+                      setState(() {});
+                    },
+                  )
+                      : null,
+                ),
+                onChanged: (value) {
+                  provider.searchTask(value);
+                  setState(() {});
                 },
               ),
             ),
-          ),
-        ],
+
+            // Task summary
+            if (provider.totalTasks > 0 || provider.totalNotes > 0)
+              Padding(
+                padding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment:
+                      MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '${tasks.length} item${tasks.length != 1 ? 's' : ''}',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        if (provider.totalTasks > 0)
+                          Text(
+                            '${provider.completionPercentage.toStringAsFixed(0)}% todos complete',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                              color: Colors.green,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                      ],
+                    ),
+                    if (provider.totalTasks > 0 ||
+                        provider.totalNotes > 0)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Row(
+                          children: [
+                            if (provider.totalTasks > 0) ...[
+                              const Icon(
+                                Icons.check_circle_outline,
+                                size: 16,
+                                color: Colors.blue,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${provider.completedCount}/${provider.totalTasks} todos',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                            if (provider.totalTasks > 0 &&
+                                provider.totalNotes > 0)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8),
+                                child: Text(
+                                  '•',
+                                  style: TextStyle(
+                                      color: Colors.grey[400]),
+                                ),
+                              ),
+                            if (provider.totalNotes > 0) ...[
+                              const Icon(
+                                Icons.note,
+                                size: 16,
+                                color: Colors.orange,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${provider.totalNotes} note${provider.totalNotes != 1 ? 's' : ''}',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+
+            // Task list / Empty state
+            if (tasks.isEmpty)
+              _buildEmptyState(context, provider)
+            else
+              ...tasks.map(
+                    (task) => TaskTile(
+                  key: ValueKey(task.id),
+                  task: task,
+                ),
+              ),
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
@@ -262,47 +278,32 @@ class _HomeScreenState extends State<HomeScreen> {
       subtitle = 'Try changing the filter';
     }
 
-    // FIX: Wrap in LayoutBuilder + SingleChildScrollView so the Column never
-    // overflows when vertical space is constrained (e.g. keyboard open, split
-    // screen, or the summary bar takes up significant height).
-    // LayoutBuilder lets us scale the icon size relative to available height
-    // so the empty state always fits without clipping.
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final iconSize = (constraints.maxHeight * 0.3).clamp(48.0, 120.0);
-
-        return SingleChildScrollView(
-          physics: const NeverScrollableScrollPhysics(),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: constraints.maxHeight),
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    icon,
-                    size: iconSize,
-                    color: Colors.grey[300],
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    message,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    subtitle,
-                    style: TextStyle(color: Colors.grey[500]),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 80),
+      child: Center(
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              size: 100,
+              color: Colors.grey[300],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              message,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                color: Colors.grey[600],
               ),
             ),
-          ),
-        );
-      },
+            const SizedBox(height: 8),
+            Text(
+              subtitle,
+              style: TextStyle(color: Colors.grey[500]),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
